@@ -1,6 +1,6 @@
 {
   "name": "@hset/react-hyper",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "a react bridge for hyper render, you can drawing complex graphics by using react",
   "main": "lib/index.js",
   "module": "es/index.js",
@@ -50,7 +50,7 @@
     "web-vitals": "^1.1.2"
   },
   "dependencies": {
-    "@hset/hyper-core": "^1.0.1",
+    "@hset/hyper-core": "^1.0.2",
     "lodash": "^4.17.21",
     "react-reconciler": "^0.26.2"
   },
