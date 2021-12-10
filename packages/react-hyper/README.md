@@ -3,12 +3,12 @@
 
 > To help build an Graphic based application effectively, we make a react custom render to connect Hyper engine and react application
 
-### Feature
+## Features
 
-* 基础图形组件的支持，能够通过 jsx 语法高效书写，并且能够轻松完成事件的处理
-* 通过基础组件的组合，能够以 react 组件的方式轻松自定义一个组件
-* 基于 react reconciler，在处理大量图形元素时获得更强的性能
-* 支持图形元素的层级嵌套自动成组，以及位置次序的自动计算
+* Base graphic components support by using jsx snippets and easily events bindings 
+* Custom your own react component by composing the base graphic components
+* Get better performance base on react reconciler when dealing with thousands of graphic elements
+* Nested elements in a group will be gathered together and their position will be updated automatically
 
 
 ## Usage
