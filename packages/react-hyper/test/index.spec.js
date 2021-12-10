@@ -1,7 +1,6 @@
 import React, { useCallback } from 'react';
 import { mount } from 'enzyme';
 
-
 import Board, { Component } from '../lib/core';
 
 const { Rect, Image } = Component;
