@@ -1,5 +1,5 @@
 
-<h1 align="center"> a react bridge for hyper render, you can drawing complex graphics by using react</h1>
+<h1 align="center"> a react bridge for hyper render</h1>
 
 > To help build an Graphic based application effectively, we make a react custom render to connect Hyper engine and react application
 
