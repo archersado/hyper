@@ -11,8 +11,6 @@
 
 <p align="center">
 <br />
-<br />
-<br />
 <em>An universal render engine toolkits for 2D/3D graphics</em>
 </p>
 
