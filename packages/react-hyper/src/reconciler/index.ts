@@ -133,7 +133,7 @@ const hostConfig = {
                 }
             }
             return;
-        } catch (e) {
+        } catch (e: any) {
             console.warn(`commitUpdate, ${e.message}`);
         }
 
