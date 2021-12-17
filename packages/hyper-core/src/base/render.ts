@@ -75,8 +75,10 @@ export default abstract class Render {
     clear() {};
     // 选中某个对象
     select(_obj: any) {};
+    selectAll() {};
     // 反选某个对象
     unselect(_obj: any) {};
+    unselectAll() {};
     // 删除某个对象
     remove(_obj: any) {};
     // 设置画布缩放
@@ -95,6 +97,8 @@ export default abstract class Render {
     };
     // 获取渲染对象
     getObject(_id: number): object { return {} };
+    // 获取所有渲染对象
+    getAllObjects() {};
     // 向渲染器注册事件
     registerRenderHook() {}
 }

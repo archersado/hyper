@@ -1,6 +1,7 @@
 import React, { useLayoutEffect, useRef, forwardRef } from 'react';
 import hostConfig from '../reconciler';
 import { RenderObject } from '@hset/hyper-core';
+import hyperManager from '@hset/hyper-core';
 import ReactFiberReconciler from 'react-reconciler';
 
 export const Component = RenderObject;
@@ -30,7 +31,6 @@ const BoardWarp = (props: any) => {
         
         fiberRef.current = ReactRconcilerHyper.createContainer(canvas.current, 0, false, null);
 
-        setRef(fiberRef);
         ReactRconcilerHyper.updateContainer(props.children, fiberRef.current);
         
         return () => {
@@ -38,6 +38,7 @@ const BoardWarp = (props: any) => {
         }
     }, []);
     React.useLayoutEffect(() => {
+        setRef(hyperManager.engine);
         ReactRconcilerHyper.updateContainer(props.children, fiberRef.current, null);
     });
 

@@ -284,6 +284,9 @@ export default class FabricRender extends Render {
         if (!match) throw new Error(`未找到 id 为${id}的渲染对象!`);
         return match;
     };
+    getAllObjects() {
+        return this.canvas.getObjects();
+    }
     // 发起重绘
     reflow() {
         this.canvas.requestRenderAll();
@@ -313,5 +316,9 @@ export default class FabricRender extends Render {
         object[key] = value;
         // this.reflow();
         return object;
+    }
+
+    unselectAll() {
+        this.canvas.discardActiveObject();
     }
 }
