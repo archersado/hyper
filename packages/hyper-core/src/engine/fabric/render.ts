@@ -1,9 +1,14 @@
 import { fabric } from 'fabric';
 import * as _ from 'lodash';
+import * as LRU from 'lru-cache';
 import Render, { IConfig, ParticalOptions, RenderObject, ILineOptions, IPolygonOptions,
-     IImageOptions, IRectOptions, IGroupOptions, ITextOptions, IPositionOptions } from '../../base/render';
+     IImageOptions, IRectOptions, IGroupOptions, ITextOptions, IPositionOptions, AlignType, GroupAlignDirection } from '../../base/render';
 import { getEnumKeys } from '../../utils';
 import { NOOP } from '../../utils/event';
+
+const lruOption = {
+    max: 1000,
+}
 
 type KeysEnum<T> = { [P in keyof Required<T>]: true };
 const IPositionOptionsKey: KeysEnum<IPositionOptions> = {
@@ -13,9 +18,15 @@ const IPositionOptionsKey: KeysEnum<IPositionOptions> = {
     height: true,
 }
 
+export interface IAlignOptions {
+    x: AlignType;
+    y: AlignType;
+}
+
 export default class FabricRender extends Render {
     public canvas: any;
     public container: HTMLElement;
+    public resourceCache: LRU;
     public elements: any[];
     public originWidth: number;
     public originHeight: number;
@@ -24,6 +35,7 @@ export default class FabricRender extends Render {
         super(config);
         const { container } = config;
         let containerDom;
+        this.resourceCache = new LRU(lruOption);
         if (_.isString(container)) {
             containerDom = document.getElementById(container as string);
             if (!containerDom) throw new Error(`容器 dom 不存在!`);
@@ -61,60 +73,143 @@ export default class FabricRender extends Render {
                 break;
             }
             case RenderObject.Rect: {
-                const { left, top, width, height } = props as Partial<ParticalOptions<IRectOptions>>;
+                const { left = 0, top = 0, width, height } = props as Partial<ParticalOptions<IRectOptions>>;
                 if (_.isUndefined(left) || _.isUndefined(top) || _.isUndefined(width) || _.isUndefined(height)) throw new Error(`缺少绘制必要信息!`)
                 object = new fabric.Rect(props);
                 break;
             }
             case RenderObject.Image: {
                 const { src, width, height, callback = NOOP, left = 0, top = 0, baseLeft = 0, baseTop = 0, ...others } = props as ParticalOptions<IImageOptions>;
-                    const fromCDN = src.includes('http');
-                    if (fromCDN) {
-                      fabric.Image.fromURL(src, object => {
-                            object.scaleToWidth(width, true);
+                    const cached = this.resourceCache.get(src);
+                    if (cached) {
+                        const self = this;
+                        cached.clone(function(object) {
                             object.scaleY = height / object.height;
                             object.type = type;
                             object.id = id;
+                            object.left = left;
+                            object.top = top;
                             for (const key in props) {
                                 if (getEnumKeys(IPositionOptionsKey).includes(key)) continue;
                                 object[key] = props[key];
                             }
+                            self.canvas.add(object);
                             callback(object);
-                            this.canvas.add(object);
-                      }, {
-                        left: baseLeft + left,
-                        top: baseTop + top,
-                        ...others,
-                        crossOrigin: 'Anonymous',
-                      });
+                        });
+
                     } else {
-                      const image = new Image();
-              
-                      image.src = src;
-                      image.onload = () => {
-                            object = new fabric.Image(image, others);
+                        if (_.isString(src)) {
+                            fabric.Image.fromURL(src, object => {
+                                object.scaleToWidth(width, true);
+                                object.scaleY = height / object.height;
+                                object.type = type;
+                                object.id = id;
+                                for (const key in props) {
+                                    if (getEnumKeys(IPositionOptionsKey).includes(key)) continue;
+                                    object[key] = props[key];
+                                }
+                                callback(object);
+                                this.resourceCache.set(src, object);
+                                this.canvas.add(object);
+                          }, {
+                            left: left,
+                            top: top,
+                            ...others,
+                            crossOrigin: 'Anonymous',
+                          });
+                        } else {
+                            (src as any).setAttribute('crossOrigin', 'Anonymous');
+                            object = new fabric.Image(src, others);
+                            object.width = width;
+                            object.height = height;
                             object.scaleToWidth(width, true);
                             object.scaleY = height / object.height;
                             object.type = type;
                             object.id = id;
-                            object.left = baseLeft + left;
-                            object.top = baseTop + top;
+                            object.left = left;
+                            object.top = top;
                             for (const key in props) {
                                 if (getEnumKeys(IPositionOptionsKey).includes(key)) continue;
                                 object.set(key, props[key])
                             }
                             callback(object);
                             this.canvas.add(object);
-                            
-                      };
-                      image.setAttribute('crossOrigin', 'Anonymous');
+                        }
                     }
+
                     break;
             }
             case RenderObject.Group: {
                 const { objects, ...others } = props as Partial<ParticalOptions<IGroupOptions>>;
+                const self = this;
                 this.canvas.discardActiveObject();
                 object = new fabric.Group(objects, { canvas: this.canvas, ...others });
+                object.removeAll = function () {
+                    object.getObjects().forEach(el => {
+                        this.remove(el);
+                        self.remove(el);
+                    });
+                }
+                object.alignInGroup = function () {
+                    const { width, height, direction = GroupAlignDirection.VERTICAL } = this;
+                    if (direction === GroupAlignDirection.ABSOLUTE) return;
+                    const objects = this.getObjects().sort((p, n) => {
+                        const getId = id => id.split('_')[1];
+                        const { id: pid } = p;
+                        const { id: nid } = n;
+
+                        return getId(pid) - getId(nid);
+                    });
+
+                    let baseX = -width / 2;
+                    let baseY = -height / 2;
+                    for(const item of objects) {
+                        const { alignX, alignY, width, height } = item;
+                        if (alignX && alignX) {
+                            // 脱离文档流
+                            switch (alignX) {
+                                case AlignType.CENTER:
+                                    item.left = 0;
+                                    item.originX = "center";
+                                    item.originY = "center";
+                                    break;
+                                case AlignType.START:
+                                    item.left = - width/2;
+                                    break;
+                                case AlignType.END:
+                                    item.left = width/2;
+                                    item.originX = "right";
+                                    break;
+                                default:
+                                    break;
+                            }
+                            switch (alignY) {
+                                case AlignType.CENTER:
+                                    item.top = 0;
+                                    item.originX = "center";
+                                    item.originY = "center";
+                                    break;
+                                case AlignType.START:
+                                    item.top = - height/2;
+                                    break;
+                                case AlignType.END:
+                                    item.top = height/2;
+                                    item.originY = "bottom";
+                                    break;
+                                default:
+                                    break;
+                            }
+                        } else {
+                            item.left = baseX;
+                            item.top = baseY;
+                            if (direction === GroupAlignDirection.HORIZONTAL) {
+                                baseX += width;
+                            } else {
+                                baseY += height;
+                            }
+                        }
+                    }
+                }
                 break;        
             }
             default: {
@@ -213,9 +308,10 @@ export default class FabricRender extends Render {
             }
             if (key === 'height') {
                 object.scaleToHeight(value, true);
-            }
         }
-
+        }
+        object[key] = value;
+        // this.reflow();
         return object;
     }
 }

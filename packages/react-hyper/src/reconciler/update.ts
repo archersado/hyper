@@ -40,7 +40,7 @@ export const executeRender = (engine: Render, type: string, props: any) => {
         for (const key in eventProps) {
             const eventBind = eventProps[key];
             const eventName = key.slice(2).toLowerCase();
-            item.on(eventName, eventBind.bind(item, item));
+            item.on(eventName, (options: any) => eventBind.call(this, options, item));
         }
         renderInstance = item;
     } else {
@@ -56,9 +56,11 @@ export const executeRender = (engine: Render, type: string, props: any) => {
                     const groupObject: any = engine.getObject(group.id);
                     obj.selectable = false;
                     obj.evented = false;
-                    groupObject.addWithUpdate(obj);
+                    groupObject.add(obj);
+                    groupObject.alignInGroup(obj);
                 } catch (e) {
                     e instanceof Error && console.warn(e.message)
+                    engine.remove(obj);
                 }
             }
             callback && callback(obj);
@@ -71,38 +73,50 @@ export const executeRender = (engine: Render, type: string, props: any) => {
     return renderInstance;
 }
 
-export const applyNodeProps = (engine: Render, type: string, props: any) => {
-    const { zIndex = 1, async = false, children = [] } = props;
-    props.zIndex = zIndex;
-    const append = function (this: any, child: any) {
-        const { type: childType } = child;
-        const object = executeRender(engine, childType, child);
+// export const renderGroupItems = function(engine: Render, group: any) {
+//     const { children } = group;
+//     const object = executeRender(engine, RenderObject.Group, group);
+//     for (const childProps of children) {
+//         const { id } = childProps;
+//         try {
+//             const child: any = engine.getObject(id);
+//             child.selectable = false;
+//             child.evented = false;
 
-        return object;
-    }
+//             object.add(child);
+//             object.alignInGroup(child);
+//         } catch (e) {
+//             e instanceof Error && console.warn(e.message)
+//         }
+//     }
+
+// }
+
+export const applyNodeProps = (engine: Render, type: string, props: any) => {
+    const { zIndex = 1, children = [] } = props;
+    props.zIndex = zIndex;
     const render = function () {
-        if (type === RenderObject.Group && !async) {
-            const childObjects = [];
+        const object = executeRender(engine, type, props);
+        if (type === RenderObject.Group) {
             for (const childProps of children) {
                 const { id } = childProps;
                 try {
                     const child: any = engine.getObject(id);
                     child.selectable = false;
                     child.evented = false;
-                    childObjects.push(child)
 
+                    object.add(child);
+                    object.alignInGroup(child);
                 } catch (e) {
                     e instanceof Error && console.warn(e.message)
                 }
             }
-            props.objects = childObjects;
         }
-        const object = executeRender(engine, type, props);
-        
+
         return object;
     }
-    const destroy = function () {
-        const { id } = props;
+    const destroy = function (props: any) {
+        const { id, children, parent } = props;
         const removeObject = (object: any, props: {[key: string]: any}) => {
             const { eventProps } = reduceProps(props);
             for (const key in eventProps) {
@@ -114,30 +128,20 @@ export const applyNodeProps = (engine: Render, type: string, props: any) => {
 
             engine.remove(object);
         }
-        if (type === RenderObject.Group) {
-            for (const childProps of children) {
-                const { id } = childProps;
-                try {
-                    const child: any = engine.getObject(id);
-
-                    removeObject(child, childProps);
-                } catch (e) {
-                    e instanceof Error && console.warn(e.message)
-                }
-            }
-        }
         try {
             const child: any = engine.getObject(id);
+            if (type === RenderObject.Group) {
+                child.removeAll();
+            }
             removeObject(child, props);
         } catch (e) {
-            e instanceof Error && console.warn(e.message)
+            e instanceof Error && console.warn(`销毁失败，${e.message}`);
         }
     }
     return {
         ...props,
         type,
         render,
-        append,
         destroy,
     }
 }

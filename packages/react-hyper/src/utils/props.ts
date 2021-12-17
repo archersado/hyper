@@ -37,11 +37,15 @@ export const isEventProps = (key: string) => key.slice(0, 2) === 'on';
 export const getChildrenFromFiber = (node: any, startId: string): any[] => {
     if (!node) return [];
     const { _debugID, elementType, stateNode, child, sibling } = node;
+    const isGroupType = elementType === RenderObject.Group;
+    if (typeof elementType === 'function' || !elementType) return [ ...getChildrenFromFiber(child, startId), ...getChildrenFromFiber(sibling, startId) ];
+    if (isGroupType) return getChildrenFromFiber(sibling, startId);
     let children = [];
     const item = {
         id: `${elementType}_${_debugID}`,
         ...stateNode
     };
+
     if (child) {
         children = getChildrenFromFiber(child, _debugID);
         return [ item, ...children, ...getChildrenFromFiber(sibling, startId) ];

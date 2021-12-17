@@ -12,16 +12,16 @@ const BoardWarp = (props: any) => {
     const container = useRef<HTMLElement | null>(); 
     const fiberRef = useRef<HTMLElement | null>();
     const canvas = useRef<HTMLElement | null>();
-    // const setRef = function (engine: any) {
-    //     const { forwardRef } = props;
+    const setRef = function (engine: any) {
+        const { forwardRef } = props;
 
-    //     if (!forwardRef) return;
-    //     if (typeof forwardRef === 'function') {
-    //         forwardRef(engine);
-    //     } else {
-    //         forwardRef.current = engine;
-    //     }
-    // };
+        if (!forwardRef) return;
+        if (typeof forwardRef === 'function') {
+            forwardRef(engine);
+        } else {
+            forwardRef.current = engine;
+        }
+    };
 
     useLayoutEffect(() => {
         canvas.current = document.getElementById('rpe');
@@ -29,6 +29,8 @@ const BoardWarp = (props: any) => {
         (canvas.current as HTMLElement).dataset.config = JSON.stringify(config);
         
         fiberRef.current = ReactRconcilerHyper.createContainer(canvas.current, 0, false, null);
+
+        setRef(fiberRef);
         ReactRconcilerHyper.updateContainer(props.children, fiberRef.current);
         
         return () => {
@@ -39,7 +41,7 @@ const BoardWarp = (props: any) => {
         ReactRconcilerHyper.updateContainer(props.children, fiberRef.current, null);
     });
 
-    return (<div id="rpe" {...props} ref={container}>
+    return (<div id="react-hyper-container" {...props} ref={container}>
         <canvas id={containerId} width={width} height={height}/>
         {props.children}
     </div>);

@@ -9,6 +9,16 @@ export enum RenderObject {
     Point = 'Point',
 }
 export type ParticalOptions<T> = T & {[key: string]: any};
+export enum AlignType {
+    START = 'START',
+    CENTER = 'CENTER',
+    END = 'END',
+}
+export enum GroupAlignDirection {
+    VERTICAL = 'VERTICAL',
+    HORIZONTAL = 'HORIZONTAL',
+    ABSOLUTE = 'ABSOLUTE',
+}
 export interface IEventOptions {
     selectable: boolean;
     evented: boolean;
@@ -48,6 +58,7 @@ export interface IImageOptions extends IPositionOptions, IEventOptions {
 }
 
 export default abstract class Render {
+    public resourceCache: Map<string, any>;
     public container: HTMLElement;
     public canvas: any;
     public elements: any[];

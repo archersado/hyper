@@ -2,8 +2,8 @@
   "name": "@hset/react-hyper",
   "version": "1.0.2",
   "description": "a react bridge for hyper render, you can drawing complex graphics by using react",
-  "main": "lib/index.js",
-  "module": "es/index.js",
+  "main": "lib/index",
+  "module": "es/index",
   "scripts": {
     "start": "nwb serve-react-demo",
     "build": "tsc",
@@ -19,6 +19,10 @@
     "hyper",
     "hset"
   ],
+  "browser": {
+    "./lib/index.js": "./lib/index.js",
+    "./src/index.js": "./src/index.ts"
+  },
   "eslintConfig": {
     "extends": [
       "react-app",

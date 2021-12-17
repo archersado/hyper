@@ -5,10 +5,11 @@
  * LICENSE file in the root directory of this source tree.
  */
 import getRender from '../render/hyper';
+import { RenderObject } from '@hset/hyper-core';
 import { getChildrenFromFiber, isEventProps, reduceParentPosition, belongToGroup, getEventName } from '../utils/props';
 import { applyNodeProps, compareDiff } from './update';
 
-
+let engine: any;
 const hostConfig = {
     now: Date.now,
     supportsMutation: true,
@@ -25,11 +26,13 @@ const hostConfig = {
     isPrimaryRenderer: false, 
     supportsHydration: false,
     getRootHostContext(rootContainerInstance: any) {
-        const { engineType, config } = rootContainerInstance.dataset;
-        const parsedConfig = JSON.parse(config);
-        const engine = getRender(engineType, parsedConfig);
-        engine.registerRenderHook();
-        (window as any).engine = engine;
+        if (!engine) {            
+            const { engineType, config } = rootContainerInstance.dataset;
+            const parsedConfig = JSON.parse(config);
+            engine = getRender(engineType, parsedConfig);
+            engine.registerRenderHook();
+            (window as any).engine = engine;
+        }
         return {
             engine
         };
@@ -52,7 +55,7 @@ const hostConfig = {
         const { child, return: parent, _debugID: id } = workInProgress;
         const children = getChildrenFromFiber(child, id);
         const [baseLeft, baseTop] = reduceParentPosition(parent, 0, 0);
-        const group = belongToGroup(parent);
+        const group = type !== RenderObject.Group && belongToGroup(parent);
         const instance = {
             ...props,
             children,
@@ -66,8 +69,16 @@ const hostConfig = {
 
         return item;
     },
+    insertBefore: (parent: any, child: any) => {
+        const append = child.render.bind(parent, child);
+        return append(child);
+    },
+    appendChild: (parent: any, child: any) => {
+        const append = child.render.bind(parent, child);
+        return append(child);
+    },
     appendInitialChild: function(parent: any, child: any) {
-        const append = parent.append.bind(parent, child);
+        const append = child.render.bind(parent, child);
         return append(child);
     },
     appendChildToContainer: (_parent: any, child: any) => {
@@ -98,36 +109,43 @@ const hostConfig = {
         return null;
     },
     commitUpdate: (instance: any, updatePayload: any, type: string, oldProps: any, newProps: any, finishedWork: boolean) => {
-        const { engine, updateQueue, removeQueue = [] } = updatePayload;
-        const { id } = instance;
-        const object = engine.getObject(id);   
+        try {
+            const { engine, updateQueue, removeQueue = [] } = updatePayload;
+            const { id } = instance;
+            const object = engine.getObject(id);   
+    
+            if (object) {
+                for (const key in updateQueue) {
+                    if (isEventProps(key)) {
+                        const eventBind = updateQueue[key];
+                        const eventName = getEventName(key);
 
-        if (object) {
-            for (const key in updateQueue) {
-                if (isEventProps(key)) {
-                    const eventBind = updateQueue[key];
-                    const eventName = getEventName(key);
-                    object.on(eventName, eventBind.bind(object, object));
-                }
-                engine.mutate(object, key, updateQueue[key]);
-            }     
-            for (const key in removeQueue) {
-                if (isEventProps(key)) {
-                    const eventName = getEventName(key);
-                    object.off(eventName);
+                        object.off(eventName);
+                        object.on(eventName, (options: any) => eventBind.call(this, options, object));
+                    }
+                    engine.mutate(object, key, updateQueue[key]);
+                }     
+                for (const key in removeQueue) {
+                    if (isEventProps(key)) {
+                        const eventName = getEventName(key);
+                        object.off(eventName);
+                    }
                 }
             }
+            return;
+        } catch (e) {
+            console.warn(`commitUpdate, ${e.message}`);
         }
-        return;
+
     },
     shouldDeprioritizeSubtree: (_type: string, nextProps:any) => {
         return !!nextProps.hidden
     },
     removeChildFromContainer: (_container: any, child: any) => {
-        child.destroy();
+        child.destroy(child);
     },
     removeChild: (_container: any, child: any) => {
-        child.destroy();
+        child.destroy(child);
     }
 }
 export default hostConfig;

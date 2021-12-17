@@ -11,7 +11,7 @@
 
 <p align="center">
 <br />
-<em>An universal render engine toolkits for 2D/3D graphics</em>
+<em>An universal render framework for 2D/3D graphics</em>
 </p>
 
 ## Install
