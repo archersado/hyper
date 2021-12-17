@@ -1,6 +1,6 @@
 {
   "name": "@hset/hyper-core",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "an universal render engine for 2D/3D graphics",
   "main": "lib/index.js",
   "scripts": {
