@@ -1,6 +1,6 @@
 {
   "name": "@hset/react-hyper",
-  "version": "1.0.7",
+  "version": "1.0.8",
   "description": "a react bridge for hyper render, you can drawing complex graphics by using react",
   "main": "lib/index",
   "module": "es/index",
