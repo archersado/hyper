@@ -321,4 +321,12 @@ export default class FabricRender extends Render {
     unselectAll() {
         this.canvas.discardActiveObject();
     }
+
+    on(event: string, handler: Function) {
+        this.canvas.on(event, handler);
+    }
+
+    off(event: string) {
+        this.canvas.off(event);
+    }
 }

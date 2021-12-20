@@ -6,7 +6,7 @@
  */
 import getRender from '../render/hyper';
 import { RenderObject } from '@hset/hyper-core';
-import { getChildrenFromFiber, isEventProps, reduceParentPosition, belongToGroup, getEventName } from '../utils/props';
+import { getChildrenFromFiber, getLevel, isEventProps, reduceParentPosition, belongToGroup, getEventName } from '../utils/props';
 import { applyNodeProps, compareDiff } from './update';
 
 let engine: any;
@@ -38,6 +38,7 @@ const hostConfig = {
         };
     },
     getChildHostContext(parentContext: any, fiberType: string) {
+        console.log("getChildHostContext", parentContext, fiberType, arguments);
         return {
             ...parentContext,
             type: fiberType
@@ -56,11 +57,13 @@ const hostConfig = {
         const children = getChildrenFromFiber(child, id);
         const [baseLeft, baseTop] = reduceParentPosition(parent, 0, 0);
         const group = type !== RenderObject.Group && belongToGroup(parent);
+        const level = getLevel(workInProgress, 0);
         const instance = {
             ...props,
             children,
             baseLeft,
             baseTop,
+            zIndex: props.zIndex || level * 10,
             group,
             parent: parent.elementType ? parent.pendingProps : null,
             id: `${type}_${id}`

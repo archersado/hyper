@@ -93,8 +93,7 @@ export const executeRender = (engine: Render, type: string, props: any) => {
 // }
 
 export const applyNodeProps = (engine: Render, type: string, props: any) => {
-    const { zIndex = 1, children = [] } = props;
-    props.zIndex = zIndex;
+    const { children = [] } = props;
     const render = function () {
         const object = executeRender(engine, type, props);
         if (type === RenderObject.Group) {
@@ -116,7 +115,7 @@ export const applyNodeProps = (engine: Render, type: string, props: any) => {
         return object;
     }
     const destroy = function (props: any) {
-        const { id, children, parent } = props;
+        const { id } = props;
         const removeObject = (object: any, props: {[key: string]: any}) => {
             const { eventProps } = reduceProps(props);
             for (const key in eventProps) {

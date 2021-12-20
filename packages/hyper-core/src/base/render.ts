@@ -99,6 +99,12 @@ export default abstract class Render {
     getObject(_id: number): object { return {} };
     // 获取所有渲染对象
     getAllObjects() {};
-    // 向渲染器注册事件
-    registerRenderHook() {}
+    // 向渲染器注册渲染钩子事件
+    registerRenderHook() {};
+    // 向渲染器注册全局事件
+    on(_event: string, _handler: Function) {
+
+    };
+    // 向渲染器注销全局事件
+    off(_event: string) {};
 }

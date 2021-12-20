@@ -77,3 +77,10 @@ export const belongToGroup = (node: any): number[]|undefined => {
 
     return belongToGroup(parentNode);
 }
+
+export const getLevel = (node: any, level: number): number => {
+    if (!node) return level;
+    const { return: parentNode } = node;
+
+    return getLevel(parentNode, level + 1);
+}
