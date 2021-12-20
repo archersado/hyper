@@ -73,25 +73,6 @@ export const executeRender = (engine: Render, type: string, props: any) => {
     return renderInstance;
 }
 
-// export const renderGroupItems = function(engine: Render, group: any) {
-//     const { children } = group;
-//     const object = executeRender(engine, RenderObject.Group, group);
-//     for (const childProps of children) {
-//         const { id } = childProps;
-//         try {
-//             const child: any = engine.getObject(id);
-//             child.selectable = false;
-//             child.evented = false;
-
-//             object.add(child);
-//             object.alignInGroup(child);
-//         } catch (e) {
-//             e instanceof Error && console.warn(e.message)
-//         }
-//     }
-
-// }
-
 export const applyNodeProps = (engine: Render, type: string, props: any) => {
     const { children = [] } = props;
     const render = function () {

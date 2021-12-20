@@ -38,7 +38,6 @@ const hostConfig = {
         };
     },
     getChildHostContext(parentContext: any, fiberType: string) {
-        console.log("getChildHostContext", parentContext, fiberType, arguments);
         return {
             ...parentContext,
             type: fiberType
