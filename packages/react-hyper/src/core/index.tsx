@@ -44,10 +44,15 @@ const BoardWarp = (props: any) => {
 
     return (<div id="react-hyper-container" {...props} ref={container}>
         <canvas id={containerId} width={width} height={height}/>
-        {props.children}
     </div>);
 }
 
-
+ReactRconcilerHyper.injectIntoDevTools({
+    findFiberByHostInstance: () => null,
+    bundleType: process.env.NODE_ENV !== 'production' ? 1 : 0,
+    version: React.version,
+    rendererPackageName: 'react-hyper',
+});
+  
 
 export default forwardRef((props, ref) => <BoardWarp {...props} forwardRef={ref} />)
