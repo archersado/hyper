@@ -8,7 +8,6 @@ import getRender from '../render/hyper';
 import { RenderObject } from '@hset/hyper-core';
 import { getChildrenFromFiber, getLevel, isEventProps, reduceParentPosition, belongToGroup, getEventName } from '../utils/props';
 import { applyNodeProps, compareDiff } from './update';
-import generateUUID from '../utils/uuid';
 
 let engine: any;
 const hostConfig = {
