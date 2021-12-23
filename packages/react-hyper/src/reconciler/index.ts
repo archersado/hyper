@@ -8,6 +8,7 @@ import getRender from '../render/hyper';
 import { RenderObject } from '@hset/hyper-core';
 import { getChildrenFromFiber, getLevel, isEventProps, reduceParentPosition, belongToGroup, getEventName } from '../utils/props';
 import { applyNodeProps, compareDiff } from './update';
+import generateUUID from '../utils/uuid';
 
 let engine: any;
 const hostConfig = {
@@ -51,8 +52,9 @@ const hostConfig = {
         );
     },
     createInstance: (type: string, props: any, _rootContainerInstance: any, currentHostContext: any, workInProgress: any) => {
+        const { id } = props;
         const { engine } = currentHostContext;
-        const { child, return: parent, _debugID: id } = workInProgress;
+        const { child, return: parent } = workInProgress;
         const children = getChildrenFromFiber(child, id);
         const [baseLeft, baseTop] = reduceParentPosition(parent, 0, 0);
         const group = type !== RenderObject.Group && belongToGroup(parent);
@@ -64,8 +66,7 @@ const hostConfig = {
             baseTop,
             zIndex: props.zIndex || level * 10,
             group,
-            parent: parent.elementType ? parent.pendingProps : null,
-            id: `${type}_${id}`
+            parent: parent.elementType ? parent.pendingProps : null
         }
         const item = applyNodeProps(engine, type, instance);
 

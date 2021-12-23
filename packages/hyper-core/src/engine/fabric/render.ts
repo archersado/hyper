@@ -277,7 +277,7 @@ export default class FabricRender extends Render {
         return this.canvas.getZoom();
     };
 
-    getObject(id: number): object {
+    getObject(id: string): object {
         const objects = this.canvas.getObjects();
         const match = objects.find(el => el.id === id);
         

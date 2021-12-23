@@ -1,10 +1,22 @@
 import React, { useLayoutEffect, useRef, forwardRef } from 'react';
 import hostConfig from '../reconciler';
+import generateUUID from '../utils/uuid';
 import { RenderObject } from '@hset/hyper-core';
 import hyperManager from '@hset/hyper-core';
 import ReactFiberReconciler from 'react-reconciler';
 
-export const Component = RenderObject;
+export const Component = Object.keys(RenderObject).reduce((ret: any, type: string) => {
+    return {
+        ...ret,
+        [type]: function (props: any) {
+            const id = useRef(generateUUID(type));
+            return React.createElement(type, {
+                ...props,
+                id: id.current
+            })
+        }
+    }
+}, {});
 
 const ReactRconcilerHyper = ReactFiberReconciler(hostConfig);
 const BoardWarp = (props: any) => {
@@ -47,12 +59,12 @@ const BoardWarp = (props: any) => {
     </div>);
 }
 
-ReactRconcilerHyper.injectIntoDevTools({
-    findFiberByHostInstance: () => null,
-    bundleType: process.env.NODE_ENV !== 'production' ? 1 : 0,
-    version: React.version,
-    rendererPackageName: 'react-hyper',
-});
+// ReactRconcilerHyper.injectIntoDevTools({
+//     findFiberByHostInstance: () => null,
+//     bundleType: 1,
+//     version: React.version,
+//     rendererPackageName: 'react-hyper',
+// });
   
 
 export default forwardRef((props, ref) => <BoardWarp {...props} forwardRef={ref} />)

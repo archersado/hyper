@@ -36,23 +36,25 @@ export const getEventName = (props: string): string => props.slice(2).toLowerCas
 export const isEventProps = (key: string) => key.slice(0, 2) === 'on';
 export const getChildrenFromFiber = (node: any, startId: string): any[] => {
     if (!node) return [];
-    const { _debugID, elementType, stateNode, child, sibling } = node;
+    const { pendingProps, elementType, stateNode, child, sibling } = node;
     const isGroupType = elementType === RenderObject.Group;
     if (typeof elementType === 'function' || !elementType) return [ ...getChildrenFromFiber(child, startId), ...getChildrenFromFiber(sibling, startId) ];
     if (isGroupType) return getChildrenFromFiber(sibling, startId);
+    const { id } = pendingProps;
     let children = [];
     const item = {
-        id: `${elementType}_${_debugID}`,
+        id,
         ...stateNode
     };
 
     if (child) {
-        children = getChildrenFromFiber(child, _debugID);
+        children = getChildrenFromFiber(child, id);
         return [ item, ...children, ...getChildrenFromFiber(sibling, startId) ];
     } else {
         return [ item, ...getChildrenFromFiber(sibling, startId) ];
     }
 }
+
 export const reduceParentPosition = (node: any, left: number, top: number): number[] => {
     if (!node) return [0, 0];
     const { pendingProps, return: parentNode, elementType } = node;
@@ -65,12 +67,13 @@ export const reduceParentPosition = (node: any, left: number, top: number): numb
 
 export const belongToGroup = (node: any): number[]|undefined => {
     if (!node) return;
-    const { _debugID, pendingProps, return: parentNode, elementType } = node;
+    const { pendingProps, return: parentNode, elementType } = node;
     if (elementType === RenderObject.Group) {
+        const { id } = pendingProps;
         const group = {
             ...pendingProps,
             type: RenderObject.Group,
-            id: `${RenderObject.Group}_${_debugID}`
+            id
         }
         return group;
     }
