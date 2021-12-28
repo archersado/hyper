@@ -37,7 +37,7 @@ const BoardWarp = (props: any) => {
     };
 
     useLayoutEffect(() => {
-        canvas.current = document.getElementById('rpe');
+        canvas.current = document.getElementById(containerId);
         (canvas.current as HTMLElement).dataset.engineType = engineType;
         (canvas.current as HTMLElement).dataset.config = JSON.stringify(config);
         
