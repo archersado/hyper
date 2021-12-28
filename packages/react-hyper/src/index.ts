@@ -1,4 +1,4 @@
-import Board, { Component } from './core';
+import getContainer, { Component } from './core';
 
 export { Component };
-export default Board;
+export default getContainer;

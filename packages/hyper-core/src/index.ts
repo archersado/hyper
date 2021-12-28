@@ -6,5 +6,5 @@ export * from './base/render';
 
 const engineManager = new EngineManager();
 engineManager.register('fabric', FabricEngine);
-export { Render };
+export { Render, EngineManager };
 export default engineManager;
